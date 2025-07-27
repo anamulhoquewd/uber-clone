@@ -9,4 +9,7 @@ const userRouter = new Hono();
 // Create user (Only can super admin)
 userRouter.post("/register", (c) => userController.userResister(c));
 
+// Login user
+userRouter.post("/login", (c) => userController.userLogin(c));
+
 export default userRouter;

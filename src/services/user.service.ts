@@ -62,3 +62,82 @@ export const userResisterService = async (body: {
     };
   }
 };
+
+// Login user
+export const userLoginService = async (body: {
+  email: string;
+  password: string;
+}) => {
+  const bodyValidation = z.object({
+    email: z.string().email("Invalid email format"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+  });
+
+  const validationResult = bodyValidation.safeParse(body);
+
+  if (!validationResult.success) {
+    return {
+      error: schemaValidationError(
+        validationResult.error,
+        "Invalid request body"
+      ),
+    };
+  }
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email: body.email }).select("+password");
+
+    if (!user) {
+      return {
+        error: {
+          success: false,
+          message: "Invalid credentials",
+          fields: [
+            {
+              name: "email",
+              message: "admin not found with this email or phone",
+            },
+          ],
+        },
+      };
+    }
+
+    // Validate password
+    if (!(await user.matchPassword(body.password))) {
+      return {
+        error: {
+          success: false,
+          message: "Invalid credentials",
+          fields: [
+            {
+              name: "password",
+              message: "Password is incorrect",
+            },
+          ],
+        },
+      };
+    }
+
+    // Generate auth token
+    const authToken = await user.generateAuthToken();
+
+    // Return success response with user data and token
+    return {
+      success: {
+        success: true,
+        data: user,
+        message: "User logged in successfully.",
+        token: authToken,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};

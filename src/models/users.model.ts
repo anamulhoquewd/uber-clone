@@ -1,6 +1,23 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { sign } from "hono/jwt";
+import dotenv from "dotenv";
+dotenv.config();
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
+
+// Define the user interface
+export interface IUser extends mongoose.Document {
+  fullname: string;
+  email: string;
+  password: string;
+  socketId?: string;
+
+  matchPassword: (pass: string) => Promise<boolean>;
+  generateAuthToken: () => Promise<string>;
+  generateResetPasswordToken: (expMinutes?: number) => string;
+}
 
 const userSchema = new mongoose.Schema(
   {
@@ -34,6 +51,25 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Method to generate auth token
+userSchema.methods.generateAuthToken = async function () {
+  if (!JWT_ACCESS_SECRET) {
+    throw new Error("JWT_ACCESS_SECRET is not defined");
+  }
+  const token = await sign(
+    {
+      id: this._id,
+      email: this.email,
+    },
+    JWT_ACCESS_SECRET
+  );
+
+  if (!token) {
+    throw new Error("Token generated failed");
+  }
+  return token;
+};
 
 // Method to generate and hash reset token
 userSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {
@@ -74,6 +110,6 @@ userSchema.pre("save", async function (next) {
 });
 
 // Export the user model
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

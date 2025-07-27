@@ -72,3 +72,83 @@ curl -X POST http://localhost:4000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"fullname":"John Doe","email":"john@example.com","password":"yourpassword"}'
 ```
+
+---
+
+### POST `/auth/login`
+
+Logs in an existing user.
+
+#### Request Body
+
+Send a JSON object with the following fields:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "yourpassword"
+}
+```
+
+- `email` (string, required): Valid email address.
+- `password` (string, required): Minimum 6 characters.
+
+#### Responses
+
+- **200 OK**
+
+  - Login successful.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "user_id",
+        "fullname": "John Doe",
+        "email": "john@example.com"
+        // other user fields
+      },
+      "message": "User logged in successfully.",
+      "token": "jwt_token"
+    }
+    ```
+
+- **400 Bad Request**
+
+  - Validation failed or invalid credentials.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "error": {
+        "message": "Invalid credentials",
+        "code": 400
+      },
+      "fields": [
+        {
+          "name": "email",
+          "message": "admin not found with this email or phone"
+        },
+        { "name": "password", "message": "Password is incorrect" }
+      ]
+    }
+    ```
+
+- **500 Internal Server Error**
+  - Server error.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "message": "Error message",
+      "stack": "Error stack trace (not in production)"
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"yourpassword"}'
+```

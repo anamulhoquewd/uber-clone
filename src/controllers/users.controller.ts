@@ -23,3 +23,20 @@ export const userResister = async (c: Context) => {
 
   return c.json(response.success, 201);
 };
+
+// Login user
+export const userLogin = async (c: Context) => {
+  const body = await c.req.json();
+
+  const response = await userService.userLoginService(body);
+
+  if (response.error) {
+    return badRequestHandler(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverErrorHandler(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
