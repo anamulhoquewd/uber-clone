@@ -38,7 +38,7 @@ export const captainService = async (body: ICaptain) => {
       return {
         error: {
           success: false,
-          message: "Captain with this email already exists.",
+          message: "Captain already exists.",
         },
       };
     }
@@ -54,6 +54,87 @@ export const captainService = async (body: ICaptain) => {
         success: true,
         data: captain,
         message: "Captain registered successfully.",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Login captain service
+export const captainLoginService = async (body: {
+  email: string;
+  password: string;
+}) => {
+  const bodyValidation = z.object({
+    email: z.string().email("Invalid email format"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+  });
+
+  const validationResult = bodyValidation.safeParse(body);
+
+  if (!validationResult.success) {
+    return {
+      error: schemaValidationError(
+        validationResult.error,
+        "Invalid request body"
+      ),
+    };
+  }
+
+  try {
+    // Find captain by email
+    const captain = await Captain.findOne({ email: body.email }).select(
+      "+password"
+    );
+
+    if (!captain) {
+      return {
+        error: {
+          success: false,
+          message: "Invalid credentials",
+          fields: [
+            {
+              name: "email",
+              message: "Captain not found",
+            },
+          ],
+        },
+      };
+    }
+
+    // Validate password
+    if (!(await captain.matchPassword(body.password))) {
+      return {
+        error: {
+          success: false,
+          message: "Invalid credentials",
+          fields: [
+            {
+              name: "password",
+              message: "Password is incorrect",
+            },
+          ],
+        },
+      };
+    }
+
+    // Generate auth token
+    const authToken = await captain.generateAuthToken();
+
+    // Return success response with captain data and token
+    return {
+      success: {
+        success: true,
+        data: captain,
+        message: "Captain logged in successfully.",
+        token: authToken,
       },
     };
   } catch (error: any) {

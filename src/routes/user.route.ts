@@ -1,6 +1,6 @@
 import { userController } from "../controllers/index.js";
 import { Hono } from "hono";
-import { authenticated } from "../middlewares/auth.middleware.js";
+import { authenticateUser } from "../middlewares/auth.middleware.js";
 
 const userRouter = new Hono();
 
@@ -11,11 +11,13 @@ userRouter.post("/register", (c) => userController.userResister(c));
 userRouter.post("/login", (c) => userController.userLogin(c));
 
 // Get user profile route
-userRouter.get("/profile", authenticated, (c) =>
+userRouter.get("/profile", authenticateUser, (c) =>
   userController.getUserProfile(c)
 );
 
 // Logout user route
-userRouter.post("/logout", authenticated, (c) => userController.userLogout(c));
+userRouter.post("/logout", authenticateUser, (c) =>
+  userController.userLogout(c)
+);
 
 export default userRouter;

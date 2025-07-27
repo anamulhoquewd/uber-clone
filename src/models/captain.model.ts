@@ -5,7 +5,7 @@ import { sign } from "hono/jwt";
 import dotenv from "dotenv";
 dotenv.config();
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET_FOR_CAPTAIN as string;
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 
 export interface ICaptain extends mongoose.Document {
   fullname: string;
@@ -26,6 +26,10 @@ export interface ICaptain extends mongoose.Document {
     latitude?: number;
     longitude?: number;
   };
+
+  matchPassword: (pass: string) => Promise<boolean>;
+  generateAuthToken: () => Promise<string>;
+  generateResetPasswordToken: (expMinutes?: number) => string;
 }
 
 const captainSchema = new mongoose.Schema<ICaptain>(

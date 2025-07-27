@@ -338,6 +338,94 @@ curl -X POST http://localhost:4000/captains/register \
 
 ---
 
+### GET `/captain/profile`
+
+Retrieves the authenticated captain's profile.
+
+#### Request
+
+- Requires authentication (JWT token in cookie or Authorization header).
+
+#### Responses
+
+- **200 OK**
+
+  - Profile retrieved successfully.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "captain_id",
+        "fullname": "Jane Doe",
+        "email": "jane@example.com",
+        "vehicle": {
+          "vehicleType": "car",
+          "plateNumber": "ABC-1234",
+          "color": "red",
+          "capacity": 4
+        }
+        // other captain fields
+      },
+      "message": "Captain profile retrieved successfully."
+    }
+    ```
+
+- **401 Unauthorized**
+
+  - Missing or invalid token.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "message": "Authentication required."
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X GET http://localhost:4000/captain/profile \
+  -H "Authorization: Bearer <jwt_token>"
+```
+
+---
+
+### POST `/captain/logout`
+
+Logs out the current captain and blacklists the JWT token.
+
+#### Description
+
+- The endpoint will blacklist the captain's JWT token for 24 hours, preventing reuse.
+- The token is removed from cookies and stored in the blacklist collection.
+
+#### Request
+
+- Requires authentication (JWT token in cookie or Authorization header).
+
+#### Responses
+
+- **200 OK**
+
+  - Logout successful.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "message": "Logged out successfully."
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X POST http://localhost:4000/captain/logout \
+  -H "Authorization: Bearer <jwt_token>"
+```
+
+---
+
 ### Blacklist Feature
 
 - Blacklisted tokens are stored in the database for 24 hours.

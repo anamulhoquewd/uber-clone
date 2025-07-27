@@ -35,7 +35,7 @@ export const userResisterService = async (body: {
       return {
         error: {
           success: false,
-          message: "User with this email already exists.",
+          message: "User already exists.",
         },
       };
     }
@@ -97,7 +97,7 @@ export const userLoginService = async (body: {
           fields: [
             {
               name: "email",
-              message: "User not found with this email or phone",
+              message: "User not found",
             },
           ],
         },
