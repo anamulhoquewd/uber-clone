@@ -237,6 +237,107 @@ curl -X POST http://localhost:4000/auth/logout \
 
 ---
 
+### POST `/captains/register`
+
+Registers a new captains (driver).
+
+#### Request Body
+
+Send a JSON object with the following fields:
+
+```json
+{
+  "fullname": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "yourpassword",
+  "vehicle": {
+    "vehicleType": "car",
+    "plateNumber": "ABC-1234",
+    "color": "red",
+    "capacity": 4
+  }
+}
+```
+
+- `fullname` (string, required): Full name, minimum 3 characters, maximum 30.
+- `email` (string, required): Valid email address.
+- `password` (string, required): Minimum 6 characters.
+- `vehicle.vehicleType` (string, required): One of `"car"`, `"bike"`, `"truck"`, `"cng"`.
+- `vehicle.plateNumber` (string, required): Unique vehicle plate number.
+- `vehicle.color` (string, required): Vehicle color.
+- `vehicle.capacity` (number, required): Minimum 1.
+
+#### Responses
+
+- **201 Created**
+
+  - Registration successful.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "captain_id",
+        "fullname": "Jane Doe",
+        "email": "jane@example.com",
+        "vehicle": {
+          "vehicleType": "car",
+          "plateNumber": "ABC-1234",
+          "color": "red",
+          "capacity": 4
+        }
+        // other captain fields
+      },
+      "message": "Captain registered successfully."
+    }
+    ```
+
+- **400 Bad Request**
+
+  - Validation failed or captain already exists.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "error": {
+        "message": "Invalid request body",
+        "code": 400
+      },
+      "fields": [{ "name": "email", "message": "Invalid email format" }]
+    }
+    ```
+
+- **500 Internal Server Error**
+  - Server error.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "message": "Error message",
+      "stack": "Error stack trace (not in production)"
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X POST http://localhost:4000/captains/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullname":"Jane Doe",
+    "email":"jane@example.com",
+    "password":"yourpassword",
+    "vehicle":{
+      "vehicleType":"car",
+      "plateNumber":"ABC-1234",
+      "color":"red",
+      "capacity":4
+    }
+  }'
+```
+
+---
+
 ### Blacklist Feature
 
 - Blacklisted tokens are stored in the database for 24 hours.

@@ -6,6 +6,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { cors } from "hono/cors";
 import userRouter from "./routes/user.route.js";
 import { notFound } from "./errors/index.js";
+import captainRouter from "./routes/captain.route.js";
 
 const app = new Hono();
 
@@ -32,6 +33,9 @@ app.get("/health", (c) => c.text("API is healthy!"));
 
 // Auth Routes
 app.route("/auth", userRouter);
+
+// Captain Routes
+app.route("/captains", captainRouter);
 
 // Global Error Handler
 app.onError((error: any, c) => {

@@ -1,11 +1,11 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose from "mongoose";
 
-export interface IBlackList extends Document {
+export interface IBlackList extends mongoose.Document {
   token: string;
   createdAt: Date;
 }
 
-const BlackListSchema: Schema = new Schema<IBlackList>({
+const BlackListSchema: mongoose.Schema = new mongoose.Schema<IBlackList>({
   token: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now, expires: 86400 }, // 24 hours in seconds
 });
