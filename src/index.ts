@@ -5,6 +5,7 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { cors } from "hono/cors";
 import userRouter from "./routes/user.route.js";
+import { notFound } from "./errors/index.js";
 
 const app = new Hono();
 
@@ -31,6 +32,25 @@ app.get("/health", (c) => c.text("API is healthy!"));
 
 // Auth Routes
 app.route("/auth", userRouter);
+
+// Global Error Handler
+app.onError((error: any, c) => {
+  console.error("error: ", error);
+  return c.json(
+    {
+      success: false,
+      message: error.message,
+      stack: process.env.NODE_ENV === "production" ? null : error.stack,
+    },
+    500
+  );
+});
+
+// Not Found Handler
+app.notFound((c) => {
+  const error = notFound(c);
+  return error;
+});
 
 serve(
   {

@@ -127,7 +127,7 @@ Send a JSON object with the following fields:
       "fields": [
         {
           "name": "email",
-          "message": "admin not found with this email or phone"
+          "message": "User not found with this email or phone"
         },
         { "name": "password", "message": "Password is incorrect" }
       ]
@@ -152,3 +152,95 @@ curl -X POST http://localhost:4000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"john@example.com","password":"yourpassword"}'
 ```
+
+---
+
+### GET `/auth/profile`
+
+Retrieves the authenticated user's profile.
+
+#### Request
+
+- Requires authentication (JWT token in cookie or Authorization header).
+
+#### Responses
+
+- **200 OK**
+
+  - Profile retrieved successfully.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "user_id",
+        "fullname": "John Doe",
+        "email": "john@example.com"
+        // other user fields
+      },
+      "message": "User profile retrieved successfully."
+    }
+    ```
+
+- **401 Unauthorized**
+
+  - Missing or invalid token.
+  - Example:
+    ```json
+    {
+      "success": false,
+      "message": "Authentication required."
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X GET http://localhost:4000/auth/profile \
+  -H "Authorization: Bearer <jwt_token>"
+```
+
+---
+
+### POST `/auth/logout`
+
+Logs out the current user and blacklists the JWT token.
+
+#### Description
+
+- The endpoint will blacklist the user's JWT token for 24 hours, preventing reuse.
+- The token is removed from cookies and stored in the blacklist collection.
+
+#### Request
+
+- Requires authentication (JWT token in cookie or Authorization header).
+
+#### Responses
+
+- **200 OK**
+
+  - Logout successful.
+  - Example:
+    ```json
+    {
+      "success": true,
+      "message": "Logged out successfully."
+    }
+    ```
+
+#### Example Usage
+
+```sh
+curl -X POST http://localhost:4000/auth/logout \
+  -H "Authorization: Bearer <jwt_token>"
+```
+
+---
+
+### Blacklist Feature
+
+- Blacklisted tokens are stored in the database for 24 hours.
+- Any request with a blacklisted token will be denied.
+- This prevents reuse of tokens after logout for improved security.
+
+---

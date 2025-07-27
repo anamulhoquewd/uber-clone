@@ -2,6 +2,7 @@ import z from "zod";
 import User from "../models/users.model.js";
 import { schemaValidationError } from "../errors/index.js";
 
+// Register user service
 export const userResisterService = async (body: {
   fullname: string;
   email: string;
@@ -63,7 +64,7 @@ export const userResisterService = async (body: {
   }
 };
 
-// Login user
+// Login user service
 export const userLoginService = async (body: {
   email: string;
   password: string;
@@ -96,7 +97,7 @@ export const userLoginService = async (body: {
           fields: [
             {
               name: "email",
-              message: "admin not found with this email or phone",
+              message: "User not found with this email or phone",
             },
           ],
         },

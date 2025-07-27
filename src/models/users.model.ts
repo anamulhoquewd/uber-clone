@@ -61,6 +61,7 @@ userSchema.methods.generateAuthToken = async function () {
     {
       id: this._id,
       email: this.email,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours from now
     },
     JWT_ACCESS_SECRET
   );
@@ -87,7 +88,7 @@ userSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {
   return resetToken;
 };
 
-// Match Admin entered password to hashed password in database
+// Match User entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return bcrypt.compare(enteredPassword, this.password);
 };
