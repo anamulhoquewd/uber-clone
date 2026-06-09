@@ -7,6 +7,7 @@ import { cors } from "hono/cors";
 import userRouter from "./routes/user.route.js";
 import { notFound } from "./errors/index.js";
 import captainRouter from "./routes/captain.route.js";
+import mapsRouter from "./routes/maps.route.js";
 
 const app = new Hono();
 
@@ -21,7 +22,7 @@ app.use(
     credentials: true, // Allow cookies
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Ensure OPTIONS is handled
     allowHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
-  })
+  }),
 );
 
 app.get("/", (c) => {
@@ -31,11 +32,14 @@ app.get("/", (c) => {
 // Health check
 app.get("/health", (c) => c.text("API is healthy!"));
 
-// Auth Routes
-app.route("/auth", userRouter);
+// Users Routes
+app.route("/users", userRouter);
 
-// Captain Routes
+// Captains Routes
 app.route("/captains", captainRouter);
+
+// Maps Routes
+app.route("/maps", mapsRouter);
 
 // Global Error Handler
 app.onError((error: any, c) => {

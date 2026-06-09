@@ -3,14 +3,14 @@ import User from "../models/users.model.js";
 import { schemaValidationError } from "../errors/index.js";
 
 // Register user service
-export const userResisterService = async (body: {
+const userResisterService = async (body: {
   fullname: string;
   email: string;
   password: string;
 }) => {
   const bodyValidatetion = z.object({
     fullname: z.string().min(1, "Full name is required"),
-    email: z.string().email("Invalid email format"),
+    email: z.string().email({ message: "Invalid email format" }),
     password: z.string().min(6, "Password must be at least 6 characters long"),
   });
 
@@ -20,7 +20,7 @@ export const userResisterService = async (body: {
     return {
       error: schemaValidationError(
         validationResult.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -65,12 +65,9 @@ export const userResisterService = async (body: {
 };
 
 // Login user service
-export const userLoginService = async (body: {
-  email: string;
-  password: string;
-}) => {
+const userLoginService = async (body: { email: string; password: string }) => {
   const bodyValidation = z.object({
-    email: z.string().email("Invalid email format"),
+    email: z.string().email({ message: "Invalid email format" }),
     password: z.string().min(6, "Password must be at least 6 characters long"),
   });
 
@@ -80,7 +77,7 @@ export const userLoginService = async (body: {
     return {
       error: schemaValidationError(
         validationResult.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -142,3 +139,5 @@ export const userLoginService = async (body: {
     };
   }
 };
+
+export { userResisterService, userLoginService };
