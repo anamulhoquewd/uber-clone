@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const getAddressCoordinate = async (address: string) => {
   const apiKey = process.env.GOOGLE_MAPS_API;
-  
+
   // v4/New Text Search বা Geocoding endpoint সাধারণত POST রিকোয়েস্ট নেয়
   const url = `https://places.googleapis.com/v1/places:searchText?key=${apiKey}`;
 
@@ -12,11 +12,11 @@ export const getAddressCoordinate = async (address: string) => {
       { textQuery: address }, // Payload
       {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           // কোন কোন ফিল্ড রিটার্ন চান তা হেডার্সে বলে দিতে হয়
-          'X-Goog-FieldMask': 'places.location', 
+          "X-Goog-FieldMask": "places.location",
         },
-      }
+      },
     );
 
     console.log("Google Maps API response: ", response.data);
@@ -50,60 +50,98 @@ export const getAddressCoordinate = async (address: string) => {
   }
 };
 
-
-export const getDistanceDuration = async (origin: string, destination: string) => {
+export const getDistanceDuration = async (
+  origin: string,
+  destination: string,
+) => {
   const apiKey = process.env.GOOGLE_MAPS_API;
-  console.log("Using Demo API Key: ", apiKey);
-  
-  // ডেমো কি-র জন্য সঠিক v1 Routes API এন্ডপয়েন্ট
-  const url = `https://routes.googleapis.com/v1/computeRoutes?key=${apiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
 
   try {
-    const response = await axios.post(
-      url,
-      {
-        // ডемо কি-তে টেক্সট অ্যাড্রেস সরাসরি পাস করার সঠিক ফরম্যাট
-        origin: {
-          address: origin // যেমন: "banasree"
-        },
-        destination: {
-          address: destination // যেমন: "airport"
-        },
-        // travelMode: "DRIVE"
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          // ডেমো কি-র রেসপন্স ফিল্টার করার জন্য এই হেডারটি দেওয়া বাধ্যতামূলক
-        //   "X-Goog-FieldMask": "routes.duration,routes.distanceMeters"
-        }
-      }
-    );
-    
-    console.log("Google Maps Routes API response: ", response.data);
+    const response = await axios.get(url);
+    const data = response.data;
 
-    if (!response.data?.routes || response.data.routes.length === 0) {
+    if (data.status !== "OK") {
       return {
         error: {
-          message: `Distance Matrix failed: No routes found`,
+          message: `Distance Matrix failed: ${data.status}`,
         },
       };
     }
 
-    const route = response.data.routes[0];
+    const element = data.rows[0].elements[0];
+
+    if (element.status !== "OK") {
+      return {
+        error: {
+          message: `Route not found: ${element.status}`,
+        },
+      };
+    }
+
     return {
       success: {
-        success: true,  
+        success: true,
         data: {
-          distance: route?.distanceMeters ?? 0, // মিটারে আসবে
-          duration: route?.duration ?? "0s",    // স্ট্রিং ফরম্যাটে আসবে (যেমন: "1500s")
+          distance: {
+            text: element.distance.text,
+            value: element.distance.value,
+          },
+          duration: {
+            text: element.duration.text,
+            value: element.duration.value,
+          },
         },
       },
     };
   } catch (error: any) {
-    // এরর রেসপন্সটি কনসোলে ডিটেইল দেখার জন্য
-    console.error("Google API Error Details:", error.response?.data);
-    
+    return {
+      serverError: {
+        message: error.response?.data?.error?.message || error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const getRouteSuggestions = async (input: string) => {
+  const apiKey = process.env.GOOGLE_MAPS_API;
+  const url = `https://places.googleapis.com/v1/places:autocomplete?key=${apiKey}`;
+
+  try {
+    const response = await axios.post(
+      url,
+      { input },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-FieldMask":
+            "suggestions.placePrediction.text,suggestions.placePrediction.placeId",
+        },
+      },
+    );
+
+    if (!response.data.suggestions || response.data.suggestions.length === 0) {
+      return {
+        error: {
+          message: "No suggestions found",
+        },
+      };
+    }
+
+    const suggestions = response.data.suggestions.map((s: any) => ({
+      description: s.placePrediction.text.text,
+      placeId: s.placePrediction.placeId,
+    }));
+
+    return {
+      success: {
+        success: true,
+        // data: suggestions,
+        originalRes: response.data, // ডিবাগিংয়ের জন্য পুরো রেসপন্স রিটার্ন করছি, প্রোডাকশনে এটা বাদ দিতে পারেন
+      },
+    };
+  } catch (error: any) {
     return {
       serverError: {
         message: error.response?.data?.error?.message || error.message,

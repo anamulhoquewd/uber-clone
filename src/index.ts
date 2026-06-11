@@ -1,13 +1,14 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import connectDB from "./config/db.js";
+import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
-import { cors } from "hono/cors";
-import userRouter from "./routes/user.route.js";
+import connectDB from "./config/db.js";
 import { notFound } from "./errors/index.js";
 import captainRouter from "./routes/captain.route.js";
 import mapsRouter from "./routes/maps.route.js";
+import rideRouter from "./routes/rides.route.js";
+import userRouter from "./routes/user.route.js";
 
 const app = new Hono();
 
@@ -41,6 +42,9 @@ app.route("/captains", captainRouter);
 // Maps Routes
 app.route("/maps", mapsRouter);
 
+// Rides Routes
+app.route("/rides", rideRouter);
+
 // Global Error Handler
 app.onError((error: any, c) => {
   console.error("error: ", error);
@@ -50,7 +54,7 @@ app.onError((error: any, c) => {
       message: error.message,
       stack: process.env.NODE_ENV === "production" ? null : error.stack,
     },
-    500
+    500,
   );
 });
 
@@ -67,5 +71,5 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
-  }
+  },
 );

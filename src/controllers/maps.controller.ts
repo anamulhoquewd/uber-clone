@@ -42,3 +42,24 @@ export const getDistanceDurationController = async (c: Context) => {
     return c.json(response.success, 200);
     
 }
+
+export const getRouteSuggestionsController = async (c: Context) => {
+  const input = c.req.query("input");
+
+  if (!input || input.length < 3) {
+    return badRequestHandler(c, {
+      message:
+        "Input query parameter is required and must be at least 3 characters long",
+    });
+  }
+  const response = await mapsService.getRouteSuggestions(input);
+  if (response.error) {
+    return badRequestHandler(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverErrorHandler(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
